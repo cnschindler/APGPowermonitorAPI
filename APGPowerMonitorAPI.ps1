@@ -1,4 +1,16 @@
-﻿$InfoGraphicsHost = "https://app.23degrees.io/api/v2/content"
+﻿[cmdletbinding()]
+Param(
+    [Parameter(Mandatory=$true)]
+    [Parameter(ParametersetName="Endpoint")]
+    [Parameter(ParametersetName="Infographics")]
+    [ValidateSet("HealthCheck", "Infographics")]
+    [string]$Endpoint,
+    [Parameter(Mandatory=$true)]
+    [Parameter(ParametersetName="Infographics")]
+    [ValidateSet("ErzeugungErneuerbarerEnergien", "Lastfluesse", "EigenerzeugungVonEnergie", "WoechentlicherEnergieverbrauch", "VerfuegbareEnergie", "GaskraftwerkeErzeugungsgrad", "ImportEuropaeischerReglerwerte")]
+    [string]$InfographicsSlug
+)
+$InfoGraphicsHost = "https://app.23degrees.io/api/v2/content"
 $InfoGraphicsEndpoint = "/{0}/data"
 $PeakHourHost = "https://awareness.cloud.apg.at/api"
 $PeakHourHealthEndpoint = "/healthz"
@@ -10,7 +22,7 @@ $Slugs = @{
     "ErzeugungErneuerbarerEnergien" = "onFQVwdMNSZ62rCN-line-erzeugung-erneuerbarer-energien"
     "Lastfluesse" = "n3vfefqpLyjsQ5s2-line-lastfluesse"
     "EigenerzeugungVonEnergie" = "dpcgsZKysiXZmwtf-bar-vertical-eigenerzeugung-von-energie-in"
-    "WWoechentlicherEnergieverbrauch" = "K7tley8BjdU1ng8j-bar-vertical-woechentlicher-energieverbrauch"
+    "WoechentlicherEnergieverbrauch" = "K7tley8BjdU1ng8j-bar-vertical-woechentlicher-energieverbrauch"
     "VerfuegbareEnergie" = "btohciVvwEG8jAGr-donut-verfuegbare"
     "GaskraftwerkeErzeugungsgrad" = "N8hJwwM6SllaR3bZ-donut-gaskraftwerke-erzeugungsgrad"
     "ImportEuropaeischerReglerwerte" = "VUGApLOeJOMFkc13-bar-vertical-import-europaeischer-reglerwerte"
@@ -24,10 +36,11 @@ function Get-InfographicData
     )
 
     $url = "$InfoGraphicsHost$InfoGraphicsEndpoint" -f $Slug
+
     try
     {
         $response = Invoke-RestMethod -Uri $url -Headers $authHeader
-        return $response.Content | ConvertFrom-Json
+        return $response.payload
     }
 
     catch
@@ -61,4 +74,15 @@ function Get-PeakHourStatus
         Write-Error "Fehler beim Abrufen des Peak Hour Status: $_"
         return $null
     }
+}
+
+if ($Endpoint -eq "Infographics")
+{
+    $slug = $Slugs[$InfographicsSlug]
+    Get-InfographicData -Slug $slug
+}
+
+Elseif ($Endpoint -eq "HealthCheck")
+{
+    Get-PeakHourStatus
 }
