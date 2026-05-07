@@ -47,7 +47,7 @@ function Get-PeakHourStatus
         # Überprüfen Sie die Gesundheit der API
         $healthResponse = Invoke-WebRequest -Uri $healthUrl -UseBasicParsing
         if ($healthResponse.StatusCode -ne 200) {
-            Write-Error "Die Peak Hour API ist nicht gesund. Statuscode: $($healthResponse.StatusCode)"
+            Write-Error "Die Peak Hour API konnte nicht abgefragt werden. Statuscode: $($healthResponse.StatusCode)"
             return $null
         }
 
